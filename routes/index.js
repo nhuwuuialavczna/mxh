@@ -13,6 +13,27 @@ const pool = new Pool({
 
 });
 
+router.get('/admin', function (req, res, next) {
+    var acc = req.session.acc;
+    if (acc != null) {
+        if (acc.email === 'admin') {
+            pool.query('SELECT * from account', (err, dataAcc) => {
+
+                res.render('admin', {
+                    title: 'Quản lí',
+                    listUser: dataAcc.rows
+                });
+
+            });
+        } else {
+            res.redirect('/logoutAsAdmin');
+        }
+
+    } else {
+        res.redirect('/');
+    }
+
+});
 
 router.get('/', function (req, res, next) {
     pool.query('SELECT * from account', (err, dataAcc) => {
@@ -81,6 +102,39 @@ function getUserOfBaiVietVaBinhLuan(rowsAcc, email) {
     }
     return undefined;
 }
+
+router.get('/loginAsAdmin', function (req, res, next) {
+    var email = req.query.email;
+    var ps = req.query.pass;
+
+    var acc = new account(email, ps, '', '', '', '', '', '', 0);
+    var isLogin = false;
+
+
+    // tại đây kiểm tra trong database rồi trả về kết quả
+    pool.query('SELECT * from account', (err, data) => {
+        if (data === undefined) {
+            res.redirect('/admin');
+            return;
+        } else {
+            var rows = data.rows;
+            var check = checkaccout(rows, acc);
+            if (check !== -1) {
+                var taikhoan = rows[check];
+                req.session.acc = taikhoan;
+                res.redirect('/');
+            } else {
+                res.redirect('/admin');
+            }
+        }
+    });
+});
+
+router.get('/logoutAsAdmin', function (req, res, next) {
+    req.session.acc = undefined;
+    res.redirect('/');
+});
+
 
 router.get('/login', function (req, res, next) {
     var email = req.query.email;

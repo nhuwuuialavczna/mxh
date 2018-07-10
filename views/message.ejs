@@ -164,11 +164,11 @@ nguyen tan hau, nguyễn tấn hậu, nguyen tan, hau nguyen, hậu nguyễn, ch
                 <li><a href="/">Trang chủ</a></li>
                 <% if(User !== undefined){ %>
                 <li><a style="color: red" href="/message">Chat công cộng</a></li>
-                <li><a  href="/addpost">Thêm bài viết</a></li>
+                <li><a href="/addpost">Thêm bài viết</a></li>
                 <% } %>
             </ul>
             <% if(User !== undefined){ %>
-           
+
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
@@ -179,7 +179,7 @@ nguyen tan hau, nguyễn tấn hậu, nguyen tan, hau nguyen, hậu nguyễn, ch
                         <li><a id="btnDangXuat" href="#">Đăng xuất</a></li>
                     </ul>
                 </li>
-               
+
                 <% } %>
             </ul>
         </div><!-- /.navbar-collapse -->
@@ -340,8 +340,8 @@ nguyen tan hau, nguyễn tấn hậu, nguyen tan, hau nguyen, hậu nguyễn, ch
                     html += img.filename;
                     socket.emit("user-send-message", '<a href="/download?fileName=' + img.filename + '" class="thumbnail">' + img.filename + '</a>');
                 } else {
-                    html += 'File không đúng định dạng. Mời đọc điều khoản gửi file';
-                    socket.emit("user-send-message-sendfile", 'Đã gửi file không đúng định dạng');
+                    html += 'Ngoài tầm kiểm soát của hệ thống';
+                    socket.emit("user-send-message", '<a href="/download?fileName=' + img.filename + '" class="thumbnail">' + img.filename + '(Ngoài tầm kiểm soát của hệ thống)' + '</a>');
                 }
             }
             $('#album').html(html);

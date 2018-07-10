@@ -8,13 +8,13 @@ var session = require('express-session');
 var fileType = require('file-type');
 var moment = require('moment');
 var _ = require('underscore');
-let multer  = require('multer'); 
-let upload  = multer({ storage: multer.memoryStorage() });
+let multer = require('multer');
+let upload = multer({storage: multer.memoryStorage()});
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var nodes = {};
-var mangUsers=[];
+var mangUsers = [];
 var mangUsersLiveCode = [];
 const {Pool, Client} = require('pg');
 const pool = new Pool({
@@ -29,7 +29,7 @@ const pool = new Pool({
 app.set('port', (process.env.PORT || 3000));
 app.set('view engine', 'ejs');
 app.set('view options', {layout: false});
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 // Tell express to serve static files from the following directories
 // app.use(express.static('public'));
@@ -45,21 +45,21 @@ app.use('/post', postRouter);
 app.use('/account', accountRouter);
 
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     var oneof = false;
-    if(req.headers.origin) {
+    if (req.headers.origin) {
         res.header('Access-Control-Allow-Origin', req.headers.origin);
         oneof = true;
     }
-    if(req.headers['access-control-request-method']) {
+    if (req.headers['access-control-request-method']) {
         res.header('Access-Control-Allow-Methods', req.headers['access-control-request-method']);
         oneof = true;
     }
-    if(req.headers['access-control-request-headers']) {
+    if (req.headers['access-control-request-headers']) {
         res.header('Access-Control-Allow-Headers', req.headers['access-control-request-headers']);
         oneof = true;
     }
-    if(oneof) {
+    if (oneof) {
         res.header('Access-Control-Max-Age', 60 * 60 * 24 * 365);
     }
 
@@ -80,13 +80,13 @@ app.get('/message', function (req, res) {
     }
 });
 
-io.on("connection", function(socket){
+io.on("connection", function (socket) {
     console.log("Co nguoi ket noi " + socket.id);
 
-    socket.on("client-send-Username", function(data){
-        if(mangUsers.indexOf(data)>=0){
+    socket.on("client-send-Username", function (data) {
+        if (mangUsers.indexOf(data) >= 0) {
             socket.emit("server-send-dki-thatbai");
-        }else{
+        } else {
             mangUsers.push(data);
             socket.Username = data;
             socket.emit("server-send-dki-thanhcong", data);
@@ -94,39 +94,39 @@ io.on("connection", function(socket){
         }
     });
 
-    socket.on('client-send-code',function (data) {
-        socket.broadcast.emit("server-send-code",data);
+    socket.on('client-send-code', function (data) {
+        socket.broadcast.emit("server-send-code", data);
     });
 
 
-    socket.on("logout", function(){
+    socket.on("logout", function () {
         mangUsers.splice(
             mangUsers.indexOf(socket.Username), 1
         );
-        socket.broadcast.emit("server-send-danhsach-Users",mangUsers);
+        socket.broadcast.emit("server-send-danhsach-Users", mangUsers);
     });
 
-    socket.on("user-send-message", function(data){
-        io.sockets.emit("server-send-mesage", {un:socket.Username, nd:data} );
+    socket.on("user-send-message", function (data) {
+        io.sockets.emit("server-send-mesage", {un: socket.Username, nd: data});
     });
 
-    socket.on("user-send-message-sendfile", function(data){
-        io.broadcast.emit("server-send-mesage", {un:socket.Username, nd:data} );
+    socket.on("user-send-message-sendfile", function (data) {
+        socket.broadcast.emit("server-send-mesage", {un: socket.Username, nd: data});
     });
 
-    socket.on("toi-dang-go-chu", function(){
+    socket.on("toi-dang-go-chu", function () {
         var s = socket.Username + " đang nhập gì đó";
         io.sockets.emit("ai-do-dang-go-chu", s);
     });
 
-    socket.on("toi-stop-go-chu", function(){
+    socket.on("toi-stop-go-chu", function () {
         io.sockets.emit("ai-do-STOP-go-chu");
     });
     socket.on('disconnect', function () {
         mangUsers.splice(
             mangUsers.indexOf(socket.Username), 1
         );
-        socket.broadcast.emit("server-send-danhsach-Users",mangUsers);
+        socket.broadcast.emit("server-send-danhsach-Users", mangUsers);
     });
 });
 
@@ -167,28 +167,21 @@ app.post('/upload_photos', function (req, res) {
         type = fileType(buffer);
 
         // Check the file type, must be either png,jpg or jpeg
-        if (type !== null) {
-            // Assign new file name
-            filename = time+'_'+file.name;
 
-            // Move the file with the new file name
-            fs.rename(file.path, path.join(__dirname, 'upload/' + filename));
+        // Assign new file name
+        filename = time + '_' + file.name;
 
-            // Add to the list of photos
-            photos.push({
-                status: true,
-                filename: filename,
-                type: type.ext,
-                publicPath: 'upload/' + filename
-            });
-        } else {
-            photos.push({
-                status: false,
-                filename: file.name,
-                message: 'Invalid file type'
-            });
-            fs.unlink(file.path);
-        }
+        // Move the file with the new file name
+        fs.rename(file.path, path.join(__dirname, 'upload/' + filename));
+
+        // Add to the list of photos
+        photos.push({
+            status: true,
+            filename: filename,
+            type: type !== null ? type.ext : 'text',
+            publicPath: 'upload/' + filename
+        });
+
     });
 
     form.on('error', function (err) {
@@ -205,9 +198,6 @@ app.post('/upload_photos', function (req, res) {
         res.status(200).json(photos);
     });
 });
-
-
-
 
 
 app.post('/thembaiviet', function (req, res) {
@@ -237,7 +227,7 @@ app.post('/thembaiviet', function (req, res) {
         // Check the file type, must be either png,jpg or jpeg
         if (type !== null) {
             // Assign new file name
-            filename =time +'_'+ file.name;
+            filename = time + '_' + file.name;
 
             // Move the file with the new file name
             fs.rename(file.path, path.join(__dirname, 'upload/' + filename));
@@ -250,7 +240,7 @@ app.post('/thembaiviet', function (req, res) {
         }
     });
 
-    form.on('field', function(name, value) {
+    form.on('field', function (name, value) {
         photos.push(value);
     });
 
@@ -271,7 +261,8 @@ app.post('/thembaiviet', function (req, res) {
         var thoigian = moment().format('L') + "  " + moment().format('LTS');
         var danhgia = 0;
         var hinhanh = getAllImgVideo(photos);
-        var dinhkem = getAllTep(photos);; // tệp đính kèm
+        var dinhkem = getAllTep(photos);
+        ; // tệp đính kèm
         var email = user.email;
         var noidung = getContent(photos);
         var sql = "insert into baiviet values('" + mabaiviet + "','" + tenbaiviet + "','" + thoigian + "'," + danhgia + ",'" + hinhanh + "','" + email + "','" + noidung + "','" + dinhkem + "')";
@@ -285,22 +276,22 @@ app.post('/thembaiviet', function (req, res) {
     });
 });
 
-function getAllImgVideo(listAll){
+function getAllImgVideo(listAll) {
     // chỉ nhận mp3,mp4
     let listaaa = [];
-    for(let fileName of listAll){
-        if(getPhanMoRong(fileName) ===  'jpg' || getPhanMoRong(fileName) ===  'png'||getPhanMoRong(fileName) ===  'mp3' || getPhanMoRong(fileName) ===  'mp4'){
+    for (let fileName of listAll) {
+        if (getPhanMoRong(fileName) === 'jpg' || getPhanMoRong(fileName) === 'png' || getPhanMoRong(fileName) === 'mp3' || getPhanMoRong(fileName) === 'mp4') {
             listaaa.push(fileName);
         }
     }
     return listaaa.join(':');
 }
 
-function getContent(listAll){
+function getContent(listAll) {
     // chỉ nhận mp3,mp4
     let listaaa = [];
-    for(let fileName of listAll){
-        if(getPhanMoRong(fileName) ===  'no'){
+    for (let fileName of listAll) {
+        if (getPhanMoRong(fileName) === 'no') {
             listaaa.push(fileName);
         }
     }
@@ -308,25 +299,26 @@ function getContent(listAll){
 }
 
 function getPhanMoRong(fileName) {
-    if(fileName===undefined){
+    if (fileName === undefined) {
         return 'no';
     }
-    if(fileName.indexOf('.')===-1){
+    if (fileName.indexOf('.') === -1) {
         return 'no';
     }
     let ext = fileName.split('.');
     return ext[ext.length - 1];
 }
 
-function getAllTep(listAll){
+function getAllTep(listAll) {
     // chỉ nhận zip, rar, exe
     let listaaa = [];
-    for(let fileName of listAll){
-        if(getPhanMoRong(fileName) !==  'no' &&getPhanMoRong(fileName) !==  'png' && getPhanMoRong(fileName) !==  'jpg' && getPhanMoRong(fileName) !==  'mp3'&& getPhanMoRong(fileName) !==  'mp4'){
+    for (let fileName of listAll) {
+        if (getPhanMoRong(fileName) !== 'no' && getPhanMoRong(fileName) !== 'png' && getPhanMoRong(fileName) !== 'jpg' && getPhanMoRong(fileName) !== 'mp3' && getPhanMoRong(fileName) !== 'mp4') {
             listaaa.push(fileName);
         }
     }
     return listaaa.join(':');
 }
+
 process.env.TZ = 'Asia/Ho_Chi_Minh';
 server.listen(process.env.PORT || 3000);
